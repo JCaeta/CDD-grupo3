@@ -2,66 +2,48 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-from datetime import datetime
 
 # Cargar el dataset original
 df = pd.read_csv('dataset.csv')
-
-# Convertir fecha (según tu código anterior)
 df['date'] = pd.to_datetime(df['date'], format='%d-%m-%Y %H:%M')
 
-# =============================================================================
-# ESTRATEGIA DE COMPRESIÓN HÍBRIDA
-# =============================================================================
-
-print("=== INICIO COMPRESIÓN DE VARIABLES ===")
+print("=== ESTRATEGIA DE COMPRESIÓN SIMPLIFICADA ===")
 
 # Crear nueva versión del dataset
 df_compressed = df.copy()
 
-# 1. COMPRESIÓN DE TEMPERATURAS (9 → 2 variables)
-df_compressed['T_avg'] = df[['T1','T2','T3','T4','T5','T6','T7','T8','T9']].mean(axis=1)
-df_compressed['T_range'] = df[['T1','T2','T3','T4','T5','T6','T7','T8','T9']].max(axis=1) - df[['T1','T2','T3','T4','T5','T6','T7','T8','T9']].min(axis=1)
+# =============================================================================
+# COMPRESIÓN SIMPLIFICADA - SOLO PROMEDIOS, SIN RANGE
+# =============================================================================
 
-# 2. COMPRESIÓN DE HUMEDADES (9 → 2 variables)
-df_compressed['RH_avg'] = df[['RH_1','RH_2','RH_3','RH_4','RH_5','RH_6','RH_7','RH_8','RH_9']].mean(axis=1)
-df_compressed['RH_range'] = df[['RH_1','RH_2','RH_3','RH_4','RH_5','RH_6','RH_7','RH_8','RH_9']].max(axis=1) - df[['RH_1','RH_2','RH_3','RH_4','RH_5','RH_6','RH_7','RH_8','RH_9']].min(axis=1)
+# 1. COMPRESIÓN DE TEMPERATURAS INTERIORES (7 variables → 1 variable)
+temperaturas_interiores = ['T1','T2','T3','T4','T5','T7','T8']  # Excluyendo T6, T9 (exteriores)
+df_compressed['T_int_avg'] = df[temperaturas_interiores].mean(axis=1)
+# ❌ ELIMINADO: T_int_range
 
-# 3. ELIMINAR COLUMNAS ORIGINALES COMPRIMIDAS
+# 2. COMPRESIÓN DE HUMEDADES INTERIORES (7 variables → 1 variable)  
+humedades_interiores = ['RH_1','RH_2','RH_3','RH_4','RH_5','RH_7','RH_8']  # Excluyendo RH_6, RH_9 (exteriores)
+df_compressed['RH_int_avg'] = df[humedades_interiores].mean(axis=1)
+# ❌ ELIMINADO: RH_int_range
+
+# =============================================================================
+# ELIMINACIÓN DE COLUMNAS ORIGINALES
+# =============================================================================
+
 columnas_a_eliminar = [
-    'T1','T2','T3','T4','T5','T6','T7','T8','T9',
-    'RH_1','RH_2','RH_3','RH_4','RH_5','RH_6','RH_7','RH_8','RH_9'
+    # Temperaturas y humedades interiores (individuales)
+    'T1','T2','T3','T4','T5','T7','T8',
+    'RH_1','RH_2','RH_3','RH_4','RH_5','RH_7','RH_8',
+    
+    # Temperaturas y humedades exteriores redundantes
+    'T6','T9','RH_6','RH_9',  # Estas son redundantes con T_out y RH_out
+    
+    # Variables aleatorias
+    'rv1', 'rv2'
 ]
 
-# Eliminar columnas originales comprimidas
-df_compressed_final = df_compressed.drop(columns=columnas_a_eliminar)
-
-# =============================================================================
-# ELIMINACIÓN DE VARIABLES ALEATORIAS (rv1, rv2)
-# =============================================================================
-
-print("\n=== ANÁLISIS DE VARIABLES ALEATORIAS ===")
-
-# Verificar si existen las variables aleatorias
-if all(col in df_compressed_final.columns for col in ['rv1', 'rv2']):
-    # Análisis de correlación con el target
-    correlacion_rv = df_compressed_final[['Appliances', 'rv1', 'rv2']].corr()['Appliances']
-    print("📊 CORRELACIÓN CON APPLIANCES:")
-    print(f"rv1: {correlacion_rv['rv1']:.4f}")
-    print(f"rv2: {correlacion_rv['rv2']:.4f}")
-    
-    # Estadísticas básicas
-    print("\n📈 ESTADÍSTICAS DE VARIABLES ALEATORIAS:")
-    print(f"rv1 - Media: {df_compressed_final['rv1'].mean():.3f}, Desvío: {df_compressed_final['rv1'].std():.3f}")
-    print(f"rv2 - Media: {df_compressed_final['rv2'].mean():.3f}, Desvío: {df_compressed_final['rv2'].std():.3f}")
-    
-    # Eliminar variables aleatorias
-    df_final_limpio = df_compressed_final.drop(columns=['rv1', 'rv2'])
-    print(f"\n✅ ELIMINADAS VARIABLES ALEATORIAS: rv1, rv2")
-    
-else:
-    df_final_limpio = df_compressed_final.copy()
-    print("ℹ️  Variables aleatorias no encontradas en el dataset")
+# Eliminar columnas (manteniendo T_out, RH_out y los promedios)
+df_final_limpio = df_compressed.drop(columns=[col for col in columnas_a_eliminar if col in df_compressed.columns])
 
 # =============================================================================
 # VALIDACIÓN DE LA COMPRESIÓN
@@ -69,108 +51,94 @@ else:
 
 print("\n=== VALIDACIÓN DE LA COMPRESIÓN ===")
 
-# 1. Estadísticas de las nuevas variables
-print("📊 ESTADÍSTICAS DE NUEVAS VARIABLES:")
-print(f"T_avg: {df_compressed['T_avg'].mean():.2f}°C (rango: {df_compressed['T_avg'].min():.1f}-{df_compressed['T_avg'].max():.1f}°C)")
-print(f"T_range: {df_compressed['T_range'].mean():.2f}°C (rango: {df_compressed['T_range'].min():.1f}-{df_compressed['T_range'].max():.1f}°C)")
-print(f"RH_avg: {df_compressed['RH_avg'].mean():.2f}% (rango: {df_compressed['RH_avg'].min():.1f}-{df_compressed['RH_avg'].max():.1f}%)")
-print(f"RH_range: {df_compressed['RH_range'].mean():.2f}% (rango: {df_compressed['RH_range'].min():.1f}-{df_compressed['RH_range'].max():.1f}%)")
+# 1. Estadísticas de las variables finales
+print("📈 ESTADÍSTICAS DE VARIABLES FINALES:")
+print(f"T_int_avg: {df_final_limpio['T_int_avg'].mean():.2f}°C (rango: {df_final_limpio['T_int_avg'].min():.1f}-{df_final_limpio['T_int_avg'].max():.1f}°C)")
+print(f"T_out: {df_final_limpio['T_out'].mean():.2f}°C (rango: {df_final_limpio['T_out'].min():.1f}-{df_final_limpio['T_out'].max():.1f}°C)")
+print(f"RH_int_avg: {df_final_limpio['RH_int_avg'].mean():.2f}% (rango: {df_final_limpio['RH_int_avg'].min():.1f}-{df_final_limpio['RH_int_avg'].max():.1f}%)")
+print(f"RH_out: {df_final_limpio['RH_out'].mean():.2f}% (rango: {df_final_limpio['RH_out'].min():.1f}-{df_final_limpio['RH_out'].max():.1f}%)")
 
-# 2. Correlación con el target (Appliances)
-print("\n🔗 CORRELACIÓN CON CONSUMO ENERGETICO (APPLIANCES):")
-correlaciones = df_compressed[['Appliances', 'T_avg', 'T_range', 'RH_avg', 'RH_range']].corr()['Appliances']
+# 2. Correlación con el target
+print("\n🔗 CORRELACIÓN CON APPLIANCES:")
+correlaciones = df_final_limpio[['Appliances', 'T_int_avg', 'T_out', 'RH_int_avg', 'RH_out', 'lights']].corr()['Appliances']
 for var, corr in correlaciones.items():
     if var != 'Appliances':
-        print(f"{var}: {corr:.3f}")
-
-# 3. Reducción de dimensionalidad
-print(f"\n📉 REDUCCIÓN DE DIMENSIONALIDAD:")
-print(f"Columnas originales: {df.shape[1]}")
-print(f"Columnas después de compresión: {df_final_limpio.shape[1]}")
-print(f"Reducción: {((df.shape[1] - df_final_limpio.shape[1]) / df.shape[1]) * 100:.1f}%")
-
-# 4. Verificar que no se pierde información crítica
-print(f"\n✅ CONSISTENCIA DE DATOS:")
-print(f"Filas originales: {df.shape[0]}")
-print(f"Filas después de compresión: {df_final_limpio.shape[0]}")
-print(f"Valores nulos introducidos: {df_final_limpio.isnull().sum().sum()}")
+        importancia = "🔥 ALTA" if abs(corr) > 0.15 else "📈 MEDIA" if abs(corr) > 0.05 else "📊 BAJA"
+        print(f"{var}: {corr:.3f} ({importancia})")
 
 # =============================================================================
-# VISUALIZACIÓN DE LA COMPRESIÓN
+# VISUALIZACIÓN SIMPLIFICADA
 # =============================================================================
 
-# Gráfico de comparación
 plt.figure(figsize=(12, 8))
 
-# Comparación de temperaturas
+# 1. Comparación temperaturas interiores vs exteriores
 plt.subplot(2, 2, 1)
-plt.scatter(df['T1'], df_compressed['T_avg'], alpha=0.5)
-plt.xlabel('T1 (Sensor individual)')
-plt.ylabel('T_avg (Promedio 9 sensores)')
-plt.title('Relación T1 vs T_avg')
+plt.scatter(df_final_limpio['T_out'], df_final_limpio['T_int_avg'], alpha=0.5, c=df_final_limpio['Appliances'], cmap='viridis')
+plt.colorbar(label='Consumo Energético')
+plt.xlabel('Temperatura Externa T_out (°C)')
+plt.ylabel('Temperatura Interna Promedio (°C)')
+plt.title('Relación Temperaturas Interna/Externa')
 
-# Distribución del rango de temperaturas
+# 2. Serie temporal comparativa
 plt.subplot(2, 2, 2)
-plt.hist(df_compressed['T_range'], bins=30, alpha=0.7)
-plt.xlabel('Rango de Temperatura (°C)')
-plt.ylabel('Frecuencia')
-plt.title('Distribución del Rango de Temperaturas')
+plt.plot(df_final_limpio['date'], df_final_limpio['T_int_avg'], label='Interior', alpha=0.7, linewidth=1)
+plt.plot(df_final_limpio['date'], df_final_limpio['T_out'], label='Exterior T_out', alpha=0.7, linewidth=1)
+plt.xlabel('Fecha')
+plt.ylabel('Temperatura (°C)')
+plt.title('Evolución Temporal')
+plt.legend()
+plt.xticks(rotation=45)
 
-# Correlación con appliances
+# 3. Correlación con appliances (heatmap)
 plt.subplot(2, 2, 3)
-corr_matrix = df_compressed[['Appliances', 'T_avg', 'RH_avg']].corr()
-sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', center=0)
+corr_vars = ['Appliances', 'T_int_avg', 'T_out', 'RH_int_avg', 'RH_out', 'lights']
+corr_matrix = df_final_limpio[corr_vars].corr()
+sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', center=0, fmt='.2f')
 plt.title('Correlación con Consumo Energético')
 
-# Serie temporal de temperatura promedio
+# 4. Comportamiento por hora del día
 plt.subplot(2, 2, 4)
-plt.plot(df_compressed['date'], df_compressed['T_avg'], alpha=0.7)
-plt.xlabel('Fecha')
-plt.ylabel('Temperatura Promedio (°C)')
-plt.title('Evolución Temporal - Temperatura Promedio')
-plt.xticks(rotation=45)
+df_final_limpio['hora'] = df_final_limpio['date'].dt.hour
+consumo_por_hora = df_final_limpio.groupby('hora')['Appliances'].mean()
+plt.plot(consumo_por_hora.index, consumo_por_hora.values, marker='o', color='green')
+plt.xlabel('Hora del Día')
+plt.ylabel('Consumo Promedio (Wh)')
+plt.title('Consumo Energético por Hora del Día')
+plt.grid(True, alpha=0.3)
 
 plt.tight_layout()
 plt.show()
 
 # =============================================================================
-# GUARDAR NUEVO DATASET
+# RESUMEN FINAL SIMPLIFICADO
 # =============================================================================
 
-# Guardar dataset final limpio
-df_final_limpio.to_csv('dataset_final_limpio.csv', index=False)
+print("\n" + "="*70)
+print("🎯 RESUMEN FINAL DEL ETL SIMPLIFICADO")
+print("="*70)
 
-print(f"\n💾 DATASET FINAL GUARDADO:")
-print(f"Archivo: dataset_final_limpio.csv")
-print(f"Dimensiones: {df_final_limpio.shape}")
-print(f"Memoria: {df_final_limpio.memory_usage(deep=True).sum() / 1024**2:.2f} MB")
+print(f"📊 ESTRATEGIA DE COMPRESIÓN:")
+print(f"   - Temperaturas INTERIORES: 7 sensores → 1 variable (T_int_avg)")
+print(f"   - Humedades INTERIORES: 7 sensores → 1 variable (RH_int_avg)")
+print(f"   - Temperatura EXTERIOR: Mantenemos T_out")
+print(f"   - Humedad EXTERIOR: Mantenemos RH_out")
+print(f"   - ❌ ELIMINADAS: Variables range (según solicitud)")
 
-# =============================================================================
-# RESUMEN FINAL DEL ETL
-# =============================================================================
-
-print("\n" + "="*60)
-print("🎯 RESUMEN FINAL DEL PROCESO ETL")
-print("="*60)
-
-print(f"📊 DATASET ORIGINAL:")
-print(f"   - Filas: {df.shape[0]}")
-print(f"   - Columnas: {df.shape[1]}")
-print(f"   - Memoria: {df.memory_usage(deep=True).sum() / 1024**2:.2f} MB")
-
-print(f"\n🔄 TRANSFORMACIONES APLICADAS:")
-print(f"   1. ✅ Compresión temperaturas: 9 variables → 2 variables (T_avg, T_range)")
-print(f"   2. ✅ Compresión humedades: 9 variables → 2 variables (RH_avg, RH_range)") 
-print(f"   3. ✅ Eliminación variables aleatorias: rv1, rv2")
-
-print(f"\n📈 DATASET FINAL:")
-print(f"   - Filas: {df_final_limpio.shape[0]}")
-print(f"   - Columnas: {df_final_limpio.shape[1]}")
-print(f"   - Reducción dimensionalidad: {((df.shape[1] - df_final_limpio.shape[1]) / df.shape[1]) * 100:.1f}%")
-print(f"   - Memoria: {df_final_limpio.memory_usage(deep=True).sum() / 1024**2:.2f} MB")
-
-print(f"\n🎯 VARIABLES FINALES ({df_final_limpio.shape[1]} columnas):")
+print(f"\n📈 DATASET FINAL - VARIABLES ({df_final_limpio.shape[1]} columnas):")
 for i, col in enumerate(df_final_limpio.columns, 1):
     print(f"   {i:2d}. {col}")
 
-print("\n🎯 ETL FINALIZADO EXITOSAMENTE!")
+print(f"\n📉 REDUCCIÓN DE DIMENSIONALIDAD:")
+print(f"   - Columnas originales: {df.shape[1]}")
+print(f"   - Columnas finales: {df_final_limpio.shape[1]}")
+print(f"   - Reducción: {((df.shape[1] - df_final_limpio.shape[1]) / df.shape[1]) * 100:.1f}%")
+
+print(f"\n💡 CARACTERÍSTICAS:")
+print(f"   - Dataset más compacto y simple")
+print(f"   - Sin variables redundantes")
+print(f"   - Ideal para modelos de machine learning")
+
+# Guardar dataset simplificado
+df_final_limpio.to_csv('dataset_final_simplificado.csv', index=False)
+print(f"\n💾 DATASET SIMPLIFICADO GUARDADO: dataset_final_simplificado.csv")
