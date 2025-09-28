@@ -73,9 +73,51 @@ Su archivo `dataset.csv` debe contener las siguientes columnas:
 
 ## 🚀 Ejecución del Pipeline ETL
 
-Tiene **tres opciones** para ejecutar el pipeline ETL:
+Tiene **cinco opciones** para ejecutar el pipeline ETL:
 
-### Opción 1: Interfaz Web de Streamlit (Recomendada)
+### Opción 1: Análisis Rápido de Outliers ⚡ (NUEVO)
+
+Ejecutar análisis rápido y tratamiento de outliers:
+
+```bash
+# Solo análisis (sin tratamiento)
+python run_outlier_analysis.py
+
+# Análisis con tratamiento conservador (recomendado)
+python run_outlier_analysis.py --treatment cap
+
+# Análisis con tratamiento moderado
+python run_outlier_analysis.py --treatment median
+
+# Análisis con tratamiento agresivo
+python run_outlier_analysis.py --treatment remove
+```
+
+**Características:**
+- ⚡ Análisis ultra-rápido de outliers
+- 🔍 Múltiples métodos de detección (IQR, Z-Score, Modified Z-Score)
+- 🔧 Tratamientos automáticos configurable
+- 📊 Reportes detallados por columna
+- 🎯 Específico para cada grupo de sensores
+- 💾 Datasets tratados guardados automáticamente
+
+### Opción 2: Análisis Comprehensivo de Outliers 📊 (NUEVO)
+
+Ejecutar análisis completo con visualizaciones:
+
+```bash
+python outliersCadaColumna.py
+```
+
+**Características:**
+- 📊 Análisis detallado por grupos de columnas
+- 📈 Visualizaciones automáticas (boxplots, histogramas)
+- 🎯 Métricas estadísticas avanzadas (skewness, kurtosis)
+- 📋 Reportes comprehensivos con tablas
+- 🔬 Interpretaciones automáticas de distribuciones
+- 🎨 Dashboard de visualización
+
+### Opción 3: Interfaz Web de Streamlit (Recomendada)
 
 Lanzar la interfaz web interactiva:
 
@@ -91,7 +133,23 @@ streamlit run streamlit_etl_app.py
 - Descarga del dataset limpio
 - Reportes comprehensivos
 
-### Opción 2: Línea de Comandos (Simple)
+### Opción 4: Pipeline ETL Mejorado con Outliers 🆕
+
+Ejecutar pipeline completo con tratamiento integrado de outliers:
+
+```bash
+streamlit run etl_enhanced_with_outliers.py
+```
+
+**Características:**
+- 🔍 Fase de análisis de outliers integrada
+- 🔧 Múltiples estrategias de tratamiento (conservador, moderado, agresivo)
+- 📊 Comparaciones antes/después del tratamiento
+- 🎯 Tratamiento específico por grupos de sensores
+- 📈 Visualizaciones integradas
+- ✅ Pipeline completo con calidad de datos mejorada
+
+### Opción 5: Línea de Comandos (Simple)
 
 Ejecutar el pipeline ETL directamente:
 
@@ -105,7 +163,7 @@ python run_etl.py
 - Generación automática de reportes
 - Ejecución ligera
 
-### Opción 3: Script de Python (Avanzado)
+### Opción 6: Script de Python (Avanzado)
 
 Importar y usar en su propio código Python:
 
@@ -121,6 +179,13 @@ etl.run_individual_analyses()
 etl.integrate_external_data()
 etl.save_final_dataset('datos_limpios.csv')
 ```
+
+### 🎯 ¿Qué Opción Elegir?
+
+- **Para análisis rápido de outliers**: Opción 1 (`run_outlier_analysis.py`)
+- **Para análisis detallado con visualizaciones**: Opción 2 (`outliersCadaColumna.py`)  
+- **Para pipeline completo con interfaz web**: Opción 4 (`etl_enhanced_with_outliers.py`)
+- **Para uso básico**: Opción 3 (`streamlit_etl_app.py`)
 
 ## 📊 Análisis por Persona - Explicación Simple
 
@@ -186,12 +251,58 @@ La presión, viento y visibilidad complementan el análisis meteorológico para 
 
 ## 🔧 Estrategias de Limpieza de Datos
 
+### 🎯 Tratamiento Avanzado de Outliers (NUEVO)
+
+#### Métodos de Detección Disponibles:
+1. **IQR (Interquartile Range)**: Método clásico basado en cuartiles
+   - Límites: Q1 - 1.5×IQR y Q3 + 1.5×IQR
+   - Robusto contra distribuciones asimétricas
+   - Recomendado para la mayoría de casos
+
+2. **Z-Score**: Método basado en desviación estándar
+   - Límite: |z| > 3 (personalizable)
+   - Sensible a distribuciones no normales
+   - Útil para distribuciones gaussianas
+
+3. **Modified Z-Score**: Método robusto usando mediana
+   - Usa mediana y MAD en lugar de media y std
+   - Más robusto que Z-Score clásico
+   - Recomendado para datos con outliers extremos
+
+4. **Isolation Forest**: Método multivariante
+   - Detecta anomalías considerando múltiples variables
+   - Machine learning no supervisado
+   - Útil para patrones complejos
+
+#### Estrategias de Tratamiento:
+1. **Conservador (Capping)**: Limitar valores a rangos aceptables
+   - Preserva todas las filas del dataset
+   - Reduce el impacto de valores extremos
+   - **Recomendado para producción**
+
+2. **Moderado (Reemplazo)**: Reemplazar con estadísticas robustas
+   - Usar mediana o media sin outliers
+   - Mantiene distribución general
+   - Bueno para análisis exploratorio
+
+3. **Agresivo (Eliminación)**: Remover filas con outliers
+   - Solo si outliers < 5% de los datos
+   - Puede afectar representatividad
+   - Usar con precaución
+
+#### Análisis por Grupos de Sensores:
+- **Consumo Energético**: Appliances (10.83% outliers), lights (22.72% outliers)
+- **Temperatura Interna**: T1-T9 (0.01% - 2.77% outliers por sensor)
+- **Humedad Interna**: RH_1-RH_9 (0% - 6.74% outliers por sensor)
+- **Meteorología Externa**: T_out, RH_out, Tdewpoint (0.06% - 2.23% outliers)
+- **Condiciones Ambientales**: Windspeed, Visibility, Pressure (1.08% - 12.78% outliers)
+
 ### Manejo de Valores Faltantes
 1. **Huecos cortos (≤3 valores)**: Rellenar hacia adelante
 2. **Huecos medianos**: Imputación KNN usando variables correlacionadas
 3. **Huecos largos**: Mediana estacional o imputación estadística
 
-### Tratamiento de Valores Atípicos
+### Tratamiento de Valores Atípicos (Método Clásico)
 1. **Valores inválidos**: Eliminar valores físicamente imposibles
 2. **Valores extremos**: Limitar a rangos razonables
 3. **Restricciones físicas**: Aplicar conocimiento del dominio
