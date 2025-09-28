@@ -70,45 +70,118 @@ for var, corr in correlaciones.items():
 # VISUALIZACIÓN SIMPLIFICADA
 # =============================================================================
 
-plt.figure(figsize=(12, 8))
+# plt.figure(figsize=(12, 8))
+# grid_cols = 2
+# grid_rows = 2
 
-# 1. Comparación temperaturas interiores vs exteriores
-plt.subplot(2, 2, 1)
-plt.scatter(df_final_limpio['T_out'], df_final_limpio['T_int_avg'], alpha=0.5, c=df_final_limpio['Appliances'], cmap='viridis')
-plt.colorbar(label='Consumo Energético')
-plt.xlabel('Temperatura Externa T_out (°C)')
-plt.ylabel('Temperatura Interna Promedio (°C)')
-plt.title('Relación Temperaturas Interna/Externa')
+# # 1. Comparación temperaturas interiores vs exteriores
+# plt.subplot(grid_rows, grid_cols, 1)
+# plt.scatter(df_final_limpio['T_out'], df_final_limpio['T_int_avg'], alpha=0.5, c=df_final_limpio['Appliances'], cmap='viridis')
+# plt.colorbar(label='Consumo Energético')
+# plt.xlabel('Temperatura Externa T_out (°C)')
+# plt.ylabel('Temperatura Interna Promedio (°C)')
+# plt.title('Relación Temperaturas Interna/Externa')
 
-# 2. Serie temporal comparativa
-plt.subplot(2, 2, 2)
-plt.plot(df_final_limpio['date'], df_final_limpio['T_int_avg'], label='Interior', alpha=0.7, linewidth=1)
-plt.plot(df_final_limpio['date'], df_final_limpio['T_out'], label='Exterior T_out', alpha=0.7, linewidth=1)
-plt.xlabel('Fecha')
-plt.ylabel('Temperatura (°C)')
-plt.title('Evolución Temporal')
-plt.legend()
-plt.xticks(rotation=45)
+# # 2. Serie temporal comparativa
+# plt.subplot(grid_rows, grid_cols, 2)
+# plt.plot(df_final_limpio['date'], df_final_limpio['T_int_avg'], label='Interior', alpha=0.7, linewidth=1)
+# plt.plot(df_final_limpio['date'], df_final_limpio['T_out'], label='Exterior T_out', alpha=0.7, linewidth=1)
+# plt.xlabel('Fecha')
+# plt.ylabel('Temperatura (°C)')
+# plt.title('Evolución Temporal')
+# plt.legend()
+# plt.xticks(rotation=45)
 
-# 3. Correlación con appliances (heatmap)
-plt.subplot(2, 2, 3)
-corr_vars = ['Appliances', 'T_int_avg', 'T_out', 'RH_int_avg', 'RH_out', 'lights']
-corr_matrix = df_final_limpio[corr_vars].corr()
-sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', center=0, fmt='.2f')
-plt.title('Correlación con Consumo Energético')
+# # 3. Correlación con appliances (heatmap)
+# plt.subplot(grid_rows, grid_cols, 3)
+# corr_vars = ['Appliances', 'T_int_avg', 'T_out', 'RH_int_avg', 'RH_out', 'lights']
+# corr_matrix = df_final_limpio[corr_vars].corr()
+# sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', center=0, fmt='.2f')
+# plt.title('Correlación con Consumo Energético')
 
-# 4. Comportamiento por hora del día
-plt.subplot(2, 2, 4)
-df_final_limpio['hora'] = df_final_limpio['date'].dt.hour
-consumo_por_hora = df_final_limpio.groupby('hora')['Appliances'].mean()
-plt.plot(consumo_por_hora.index, consumo_por_hora.values, marker='o', color='green')
-plt.xlabel('Hora del Día')
-plt.ylabel('Consumo Promedio (Wh)')
-plt.title('Consumo Energético por Hora del Día')
-plt.grid(True, alpha=0.3)
+# # 4. Comportamiento por hora del día
+# plt.subplot(grid_rows, grid_cols, 4)
+# df_final_limpio['hora'] = df_final_limpio['date'].dt.hour
+# consumo_por_hora = df_final_limpio.groupby('hora')['Appliances'].mean()
+# plt.plot(consumo_por_hora.index, consumo_por_hora.values, marker='o', color='green')
+# plt.xlabel('Hora del Día')
+# plt.ylabel('Consumo Promedio (Wh)')
+# plt.title('Consumo Energético por Hora del Día')
+# plt.grid(True, alpha=0.3)
+
+# plt.tight_layout()
+# plt.show()
+
+fig = plt.figure(figsize=(20, 20))
+grid_cols = 2
+grid_rows = 3
+grid_height_ratios = [1] * grid_rows
+grid_height_ratios[0] = 0.75
+
+# Define the grid layout
+gs = fig.add_gridspec(grid_rows, grid_cols, height_ratios=grid_height_ratios)
+
+# Row 1: Line chart of T_out and Tdewpoint (span all columns)
+ax1 = fig.add_subplot(gs[0, :])
+# Row 2: Line chart of RH_out (span all columns)
+ax2 = fig.add_subplot(gs[1, 0]) # Hist appliances
+ax3 = fig.add_subplot(gs[1, 1])  # Hist lights
+# ax4 = fig.add_subplot(gs[1, 2])  # Hist T_out
+# ax5 = fig.add_subplot(gs[1, 3])  # Hist RH_out
+
+ax6 = fig.add_subplot(gs[2, 0])  # Boxplot Appliances
+ax7 = fig.add_subplot(gs[2, 1])  # Boxplot lights
+
+# 1. Serie temporal comparativa
+ax1.plot(df_final_limpio['date'], df_final_limpio['T_int_avg'], label='Interior', alpha=0.7, linewidth=1, color='orange')
+ax1.plot(df_final_limpio['date'], df_final_limpio['T_out'], label='Exterior T_out', alpha=0.7, linewidth=1, color='red')
+ax1.set_xlabel('Fecha')
+ax1.set_ylabel('Temperatura (°C)')
+ax1.set_title('Evolución Temporal')
+ax1.legend()
+ax1.tick_params(axis='x', rotation=45)
+
+
+# 3. Histogram for lights
+n, bins, patches = ax2.hist(df_final_limpio['Appliances'], bins=30, density=False, alpha=0.7, color='green', edgecolor='black')
+ax2.set_title('Consumo de electrodomésticos (Wh)')
+ax2.set_xlabel('Wh')
+ax2.set_ylabel('Frecuencia')
+ax2.grid(True, alpha=0.3)
+
+
+# 3. Histogram for lights
+n, bins, patches = ax3.hist(df_final_limpio['lights'], bins=30, density=False, alpha=0.7, color='red', edgecolor='black')
+ax3.set_title('Histograma de Luces')
+ax3.set_xlabel('Luces (Wh)')
+ax3.set_ylabel('Frecuencia')
+ax3.grid(True, alpha=0.3)
+
+
+sns.boxplot(data=df_final_limpio['Appliances'], ax=ax6, orient="h", color='green')
+ax6.set_title('Consumo de electrodomésticos (Wh)')
+
+sns.boxplot(data=df_final_limpio['lights'], ax=ax7, orient="h", color='green')
+ax7.set_title('Luces (Wh)')
 
 plt.tight_layout()
+
+## Adjust propeties
+wspace = 0.179
+hspace = 0.61
+right = 0.983
+left = 0.093
+top = 0.957
+bottom = 0.076
+
+plt.subplots_adjust(wspace=wspace, hspace=hspace, right=right, left=left, top=top, bottom=bottom)
 plt.show()
+
+
+
+
+
+
 
 # =============================================================================
 # RESUMEN FINAL SIMPLIFICADO
