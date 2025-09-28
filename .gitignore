@@ -1,2 +1,2 @@
-venv_etl
-.venv
+venv_etl/
+.venv/
