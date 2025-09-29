@@ -1,2 +1,3 @@
 venv_etl/
 .venv/
+__pycache__/

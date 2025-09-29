@@ -108,7 +108,6 @@ ax3.set_xlabel('Humedad (%)')
 ax3.set_ylabel('Frecuencia')
 ax3.grid(True, alpha=0.3)
 
-
 sns.boxplot(data=df_final_limpio['T_out'], ax=ax4, orient="h", color='red')
 ax4.set_title('Temperatura exterior')
 ax4.set_xlabel('Temperatura (°C)')
@@ -117,11 +116,9 @@ sns.boxplot(data=df_final_limpio['T_int_avg'], ax=ax5, orient="h", color='orange
 ax5.set_title('Temperatura interior (Promedio)')
 ax5.set_xlabel('Temperatura (°C)')
 
-
 sns.boxplot(data=df_final_limpio['RH_out'], ax=ax6, orient="h", color='blue')
 ax6.set_title('Humedad exterior')
 ax6.set_xlabel('Humedad (%)')
-
 
 # 2. Correlación
 corr_vars = ['Appliances', 'T_int_avg', 'T_out', 'RH_int_avg', 'RH_out', 'lights']
@@ -129,12 +126,6 @@ corr_matrix = df_final_limpio[corr_vars].corr()
 sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', center=0, fmt='.2f', ax=ax7)
 ax7.set_title('Correlación con Consumo Energético')
 ax7.tick_params(axis='y', rotation=0)
-
-
-
-
-
-
 
 plt.tight_layout()
 
@@ -148,37 +139,6 @@ bottom = 0.11
 
 plt.subplots_adjust(wspace=wspace, hspace=hspace, right=right, left=left, top=top, bottom=bottom)
 plt.show()
-
-
-
-# =============================================================================
-# RESUMEN FINAL SIMPLIFICADO
-# =============================================================================
-
-# print("\n" + "="*70)
-# print("🎯 RESUMEN FINAL DEL ETL SIMPLIFICADO")
-# print("="*70)
-
-# print(f"📊 ESTRATEGIA DE COMPRESIÓN:")
-# print(f"   - Temperaturas INTERIORES: 7 sensores → 1 variable (T_int_avg)")
-# print(f"   - Humedades INTERIORES: 7 sensores → 1 variable (RH_int_avg)")
-# print(f"   - Temperatura EXTERIOR: Mantenemos T_out")
-# print(f"   - Humedad EXTERIOR: Mantenemos RH_out")
-# print(f"   - ❌ ELIMINADAS: Variables range (según solicitud)")
-
-# print(f"\n📈 DATASET FINAL - VARIABLES ({df_final_limpio.shape[1]} columnas):")
-# for i, col in enumerate(df_final_limpio.columns, 1):
-#     print(f"   {i:2d}. {col}")
-
-# print(f"\n📉 REDUCCIÓN DE DIMENSIONALIDAD:")
-# print(f"   - Columnas originales: {df.shape[1]}")
-# print(f"   - Columnas finales: {df_final_limpio.shape[1]}")
-# print(f"   - Reducción: {((df.shape[1] - df_final_limpio.shape[1]) / df.shape[1]) * 100:.1f}%")
-
-# print(f"\n💡 CARACTERÍSTICAS:")
-# print(f"   - Dataset más compacto y simple")
-# print(f"   - Sin variables redundantes")
-# print(f"   - Ideal para modelos de machine learning")
 
 # Guardar dataset simplificado
 df_final_limpio.to_csv('dataset_paso_3.csv', index=False)
