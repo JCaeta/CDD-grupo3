@@ -144,7 +144,7 @@ ax1.tick_params(axis='x', rotation=45)
 
 # 3. Histogram for lights
 n, bins, patches = ax2.hist(df_final_limpio['Appliances'], bins=30, density=False, alpha=0.7, color='green', edgecolor='black')
-ax2.set_title('Consumo de electrodomésticos (Wh)')
+ax2.set_title('Consumo total (Appliances) - Target')
 ax2.set_xlabel('Wh')
 ax2.set_ylabel('Frecuencia')
 ax2.grid(True, alpha=0.3)
@@ -153,17 +153,18 @@ ax2.grid(True, alpha=0.3)
 # 3. Histogram for lights
 n, bins, patches = ax3.hist(df_final_limpio['lights'], bins=30, density=False, alpha=0.7, color='red', edgecolor='black')
 ax3.set_title('Histograma de Luces')
-ax3.set_xlabel('Luces (Wh)')
+ax3.set_xlabel('Wh')
 ax3.set_ylabel('Frecuencia')
 ax3.grid(True, alpha=0.3)
 
 
 sns.boxplot(data=df_final_limpio['Appliances'], ax=ax6, orient="h", color='green')
-ax6.set_title('Consumo de electrodomésticos (Wh)')
+ax6.set_title('Consumo total (Appliances) - Target')
+ax6.set_xlabel('Wh')
 
 sns.boxplot(data=df_final_limpio['lights'], ax=ax7, orient="h", color='green')
 ax7.set_title('Luces (Wh)')
-
+ax7.set_xlabel('Wh')
 plt.tight_layout()
 
 ## Adjust propeties

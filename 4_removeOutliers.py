@@ -27,14 +27,12 @@ def remove_outliers_rh_out(df, column):
     value = 48
     return df[(df[column] >= value)]
 
-
 # Apply for each column
 for col in ['T_out','T_int_avg']:
     df = remove_outliers_iqr(df, col)
 
 df = remove_outliers_lights(df, 'lights')
 df = remove_outliers_rh_out(df, 'RH_out')
-
 
 final_len = len(df)
 outliers_removed = start_len - final_len
