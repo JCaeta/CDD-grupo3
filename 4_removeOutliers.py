@@ -10,7 +10,6 @@ start_len = len(df)
 q1 = 0.35
 q3 = 0.68
 
-
 def remove_outliers_iqr(df, column):
     Q1 = df[column].quantile(q1)
     Q3 = df[column].quantile(q3)
@@ -63,12 +62,6 @@ def plot_distribution(df, col, ax, color, title):
     mean = df[col].mean()
     median = df[col].median()
     std = df[col].std()
-    
-    Q1 = df[col].quantile(q1)
-    Q3 = df[col].quantile(q3)
-    IQR = Q3 - Q1
-    lower = Q1 - 1.5 * IQR
-    upper = Q3 + 1.5 * IQR
     
     # Histogram
     ax.hist(df[col], bins=30, alpha=0.7, edgecolor='black', color=color)

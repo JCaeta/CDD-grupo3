@@ -86,8 +86,6 @@ if inconsistent_issues:
 else:
     print("✅ No se encontraron valores inconsistentes evidentes")
 
-
-
 print("\n=== ANÁLISIS DE LA COLUMNA DATE ===")
 
 # Convertir a datetime y verificar consistencia
@@ -114,7 +112,6 @@ try:
         
 except Exception as e:
     print(f"❌ Error en formato de fecha: {e}")
-
 
 print("\n" + "="*50)
 print("RESUMEN EJECUTIVO DE LA LIMPIEZA")
